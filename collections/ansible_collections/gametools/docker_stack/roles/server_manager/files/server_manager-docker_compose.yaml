@@ -1,0 +1,65 @@
+---
+networks:
+  manager:
+services:
+  playerLogger:
+    image: ghcr.io/community-network/playerlogger-rust/playerlogger-rust:latest
+    restart: always
+    environment:
+      - MONGO_DETAILS_STRING={{MONGO_DETAILS_STRING}}
+    networks:
+      - manager
+
+  global-bans:
+    image: ghcr.io/community-network/global-bans-rust/global-bans-rust:latest
+    restart: always
+    environment:
+      - MONGO_DETAILS_STRING={{MONGO_DETAILS_STRING}}
+    networks:
+      - manager
+
+  multialive:
+    image: ghcr.io/community-network/multialive-backend/multialive:latest
+    restart: always
+    environment:
+      - MONGO_DETAILS_STRING={{MONGO_DETAILS_STRING}}
+    healthcheck:
+      test: curl -fk http://localhost:80/ || exit 1
+      interval: "60s"
+      timeout: "3s"
+      start_period: "5s"
+      retries: 3
+
+  update-db:
+    image: ghcr.io/community-network/update_db/update_db:latest
+    restart: always
+    healthcheck:
+      test: curl -fk http://localhost:80/ || exit 1
+      interval: "60s"
+      timeout: "3s"
+      start_period: "5s"
+      retries: 3
+    networks:
+      - manager
+
+  master-server:
+    image: ghcr.io/community-network/function-master-rust/function-master-rust:latest
+    tty: true
+    restart: always
+    networks:
+      - manager
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - "node.hostname==synology-nas"
+    extra_hosts:
+      - "rabbitmq:100.112.156.115"
+
+  fortress:
+    image: ghcr.io/community-network/fortress/fortress@sha256:4306b81f2550b56d3a32d5ba9764598d3aa21136e379e9df112cc430acd904f3
+    restart: always
+    networks:
+      - manager
+    extra_hosts:
+      - "rabbitmq:100.112.156.115"

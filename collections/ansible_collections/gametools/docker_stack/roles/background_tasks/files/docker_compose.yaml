@@ -1,0 +1,17 @@
+---
+services:
+  background-tasks-rust:
+    image: ghcr.io/community-network/background-tasks-rust/background-tasks-rust:latest
+    restart: always
+    deploy:
+      placement:
+        constraints:
+          - "node.hostname==jobse-server"
+    environment:
+      - MONGO_DETAILS_STRING={{MONGO_DETAILS_STRING}}
+      - DATABASE_URL={{DATABASE_URL}}
+      - API_MAIN_ACCOUNT={{API_MAIN_ACCOUNT}}
+      - API_MAIN_ACCOUNT_PASSWORD={{API_MAIN_ACCOUNT_PASSWORD}}
+      - INFLUX_URL={{INFLUX_URL}}
+      - INFLUX_USER={{INFLUX_USER}}
+      - INFLUX_PASS={{INFLUX_PASS}}

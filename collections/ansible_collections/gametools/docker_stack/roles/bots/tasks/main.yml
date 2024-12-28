@@ -1,0 +1,14 @@
+---
+- name: Test the connection
+  ansible.builtin.ping:
+- name: Include the secret file
+  ansible.builtin.include_vars:
+    file: secret.yml
+- name: Setup the new version
+  community.docker.docker_stack:
+    name: bots
+    prune: true
+    compose:
+      - "{{ lookup('template', 'files/docker_compose.yaml') | from_yaml }}"
+    docker_cli: /usr/local/bin/docker
+    with_registry_auth: true

@@ -1,0 +1,23 @@
+---
+services:
+  redis:
+    image: redis:latest
+    ulimits:
+      memlock: -1
+    environment:
+      - REDIS_PASSWORD={{REDIS_PASS}}
+      - REDIS_REPLICATION_MODE=master
+    volumes:
+      - redisdata:/data
+    command:
+      # Save if 100 keys are added in every 10 seconds
+      - "--save 10 100"
+      # Set password
+      - "--requirepass {{REDIS_PASS}}"
+      - "--maxmemory 2gb"
+    deploy:
+      mode: global
+      restart_policy:
+        condition: any
+volumes:
+  redisdata:

@@ -1,0 +1,46 @@
+---
+- name: Test the connection
+  ansible.builtin.ping:
+- name: Include the secret file
+  ansible.builtin.include_vars:
+    file: secret.yml
+- name: Add the secret files
+  community.docker.docker_secret:
+    name: manager-gateway-1
+    data: "{{ MANAGER_GATEWAY_1 }}"
+- name: Add the secret files
+  community.docker.docker_secret:
+    name: manager-gateway-2
+    data: "{{ MANAGER_GATEWAY_2 }}"
+- name: Add the secret files
+  community.docker.docker_secret:
+    name: manager-gateway-3
+    data: "{{ MANAGER_GATEWAY_3 }}"
+- name: Add the secret files
+  community.docker.docker_secret:
+    name: manager-gateway-4
+    data: "{{ MANAGER_GATEWAY_4 }}"
+- name: Add the secret files
+  community.docker.docker_secret:
+    name: manager-gateway-5
+    data: "{{ MANAGER_GATEWAY_5 }}"
+- name: Add the secret files
+  community.docker.docker_secret:
+    name: manager-gateway-6
+    data: "{{ MANAGER_GATEWAY_6 }}"
+- name: Setup the new version
+  community.docker.docker_stack:
+    name: gateway
+    prune: true
+    compose:
+      - "{{ lookup('template', 'files/gateway-docker_compose.yaml') | from_yaml }}"
+    docker_cli: /usr/local/bin/docker
+    with_registry_auth: true
+- name: Setup the new version
+  community.docker.docker_stack:
+    name: server_manager
+    prune: true
+    compose:
+      - "{{ lookup('template', 'files/server_manager-docker_compose.yaml') | from_yaml }}"
+    docker_cli: /usr/local/bin/docker
+    with_registry_auth: true

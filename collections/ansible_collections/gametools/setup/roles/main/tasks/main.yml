@@ -1,0 +1,59 @@
+---
+- name: Include the secret file
+  ansible.builtin.include_vars:
+    file: secret.yml
+
+- name: Delete old home rule
+  community.general.ufw:
+    rule: allow
+    comment: "{{ item.name }}"
+    from_ip: "{{ item.ip }}"
+    delete: true
+  with_items: "{{ lookup('file', 'files/old_ufw_servers.yml') | from_yaml }}"
+- name: Delete old home forward rule
+  community.general.ufw:
+    rule: allow
+    route: true
+    comment: "{{ item.name }}"
+    from_ip: "{{ item.ip }}"
+    delete: true
+  with_items: "{{ lookup('file', 'files/old_ufw_servers.yml') | from_yaml }}"
+
+- name: Allow from new home rule
+  community.general.ufw:
+    rule: allow
+    comment: "{{ item.name }}"
+    from_ip: "{{ item.ip }}"
+  with_items: "{{ lookup('file', 'files/new_ufw_servers.yml') | from_yaml }}"
+- name: Allow from new home forward rule
+  community.general.ufw:
+    rule: allow
+    route: true
+    comment: "{{ item.name }}"
+    from_ip: "{{ item.ip }}"
+  with_items: "{{ lookup('file', 'files/new_ufw_servers.yml') | from_yaml }}"
+
+- name: Add Docker GPG apt Key
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker Repository
+  ansible.builtin.apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu jammy stable
+    state: present
+
+- name: Update apt and install docker-ce
+  ansible.builtin.apt:
+    name: docker-ce
+    update_cache: true
+
+- name: Install Docker Module for Python
+  ansible.builtin.pip:
+    name: docker
+
+- name: Add docker authentication to servers
+  community.docker.docker_login:
+    registry_url: ghcr.io
+    username: "{{ DOCKER_GHCR_LOGIN }}"
+    password: "{{ DOCKER_GHCR_PASS }}"

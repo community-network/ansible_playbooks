@@ -1,0 +1,30 @@
+---
+- name: Example playbook
+  hosts: swarm_manager
+  vars:
+    ansible_python_interpreter: .venv/bin/python3
+  roles:
+    - role: gametools.docker_stack.background_tasks
+    - role: gametools.docker_stack.redis
+    - role: gametools.docker_stack.bots
+    - role: gametools.docker_stack.global
+    # - role: gametools.docker_stack.server_manager
+  tasks:
+    # Check background_tasks status
+    - name: Get info from a service
+      community.docker.docker_stack_task_info:
+        name: background_tasks
+        docker_cli: /usr/local/bin/docker
+      register: result
+    - name: All containers should be running
+      ansible.builtin.assert:
+        that: result.results | selectattr("CurrentState", "search", "Running") | length >= 1
+    # check redis status
+    - name: Get info from a service
+      community.docker.docker_stack_task_info:
+        name: redis
+        docker_cli: /usr/local/bin/docker
+      register: result
+    - name: All containers should be running
+      ansible.builtin.assert:
+        that: result.results | selectattr("CurrentState", "search", "Running") | length >= 3

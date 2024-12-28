@@ -1,0 +1,26 @@
+---
+- name: Include the secret file
+  ansible.builtin.include_vars:
+    file: secret.yml
+
+- name: Create the /srv directory
+  ansible.builtin.file:
+    path: /srv
+    state: directory
+    mode: '0755'
+
+- name: Copy the cloudflare-ufw shell file
+  ansible.builtin.copy:
+    src: files/cloudflare-ufw.sh
+    dest: /srv/cloudflare-ufw.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure the cloudflare-ufw crontab exists
+  ansible.builtin.cron:
+    name: "cloudflare_ufw"
+    minute: "0"
+    hour: "0"
+    weekday: "1"
+    job: "/srv/cloudflare-ufw.sh > /dev/null 2>&1"

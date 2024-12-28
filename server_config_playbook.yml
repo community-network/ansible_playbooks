@@ -1,0 +1,12 @@
+---
+- name: Setup main servers
+  hosts: vps
+  become: true
+  roles:
+    - role: gametools.setup.main
+
+- name: Setup loadbalancer
+  hosts: loadbalancer
+  become: true
+  roles:
+    - role: gametools.setup.loadbalancer

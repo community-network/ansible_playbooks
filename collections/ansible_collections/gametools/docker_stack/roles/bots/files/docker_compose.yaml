@@ -1,0 +1,53 @@
+---
+services:
+  gamestats:
+    image: ghcr.io/community-network/gamestats/gamestats:latest
+    restart: always
+    environment:
+      - redishost={{REDIS_HOST}}
+      - redisport=6379
+      - redispass={{REDIS_PASS}}
+      - TOKEN={{GAMESTATS_TOKEN}}
+      - MONGO_CON={{MONGO_DETAILS_STRING}}
+      - toptoken={{GAMESTATS_TOPGG_AUTH}}
+      - GBAN_DB={{GBAN_DB}}
+      - DISCORDCOM_AUTH={{DISCORDCOM_AUTH}}
+      - TOPGG_AUTH={{GAMESTATS_TOPGG_AUTH}}
+      - DISCORDBOTLIST_AUTH={{DISCORDBOTLIST_AUTH}}
+      - DISCORDEXTREMELIST_AUTH={{DISCORDEXTREMELIST_AUTH}}
+      - API_MAIN_ACCOUNT={{API_MAIN_ACCOUNT}}
+      - API_MAIN_ACCOUNT_PASSWORD={{API_MAIN_ACCOUNT_PASSWORD}}
+      - INFLUX_URL={{INFLUX_URL}}
+      - INFLUX_USER={{INFLUX_URL}}
+      - INFLUX_PASS={{INFLUX_URL}}
+      - GT_GATEWAY={{GT_GATEWAY}}
+    healthcheck:
+      test: ["CMD-SHELL", "discordhealthcheck || exit 1"]
+      interval: "60s"
+      timeout: "5s"
+      start_period: "60s"
+      retries: 3
+  beamng-mp:
+    image: ghcr.io/community-network/beamng-mp/beamng:latest
+    restart: always
+    environment:
+      - redishost={{REDIS_HOST}}
+      - redisport=6379
+      - redispass={{REDIS_PASS}}
+      - TOKEN={{BEAMNG_TOKEN}}
+      - TOP_TOKEN={{BEAMNG_TOPGG_AUTH}}
+    healthcheck:
+      test: ["CMD-SHELL", "discordhealthcheck || exit 1"]
+      interval: "60s"
+      timeout: "3s"
+      start_period: "5s"
+      retries: 3
+  community-manager:
+    image: ghcr.io/band-of-brothers-battlefield/community-manager/community-manager:latest
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "discordhealthcheck || exit 1"]
+      interval: "60s"
+      timeout: "3s"
+      start_period: "5s"
+      retries: 3

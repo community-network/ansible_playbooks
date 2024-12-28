@@ -1,0 +1,6 @@
+{
+    "ansible.python.interpreterPath": "/Users/zjobse/.pyenv/versions/3.12.2/bin/python",
+    "yaml.customTags": [
+        "!vault scalar"
+    ]
+}

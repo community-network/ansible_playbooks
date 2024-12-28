@@ -1,0 +1,191 @@
+---
+services:
+  rabbitmq-server:
+    image: ghcr.io/community-network/rabbitmq/rabbitmq:latest
+    restart: always
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - "node.hostname==synology-nas"
+    ports:
+      - "5671:5671"
+      - "15671:15671"
+    healthcheck:
+      test: rabbitmq-diagnostics -q status
+      start_period: 30s
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  gateway-bf1-cookies:
+    image: ghcr.io/community-network/gateway-bf1/gateway-bf1:latest
+    restart: always
+    depends_on:
+      - rabbitmq-server
+    extra_hosts:
+      - "rabbitmq:100.112.156.115"
+    deploy:
+      replicas: 30
+
+  gateway-bf1:
+    image: ghcr.io/community-network/gateway-bf1/gateway-bf1:latest
+    restart: always
+    depends_on:
+      - rabbitmq-server
+    extra_hosts:
+      - "rabbitmq:100.112.156.115"
+    deploy:
+      replicas: 6
+    environment:
+      - GAME=BF1
+      - TASK_SLOT={{.Task.Slot}}
+    secrets:
+      - manager-gateway-1
+      - manager-gateway-2
+      - manager-gateway-3
+      - manager-gateway-4
+      - manager-gateway-5
+      - manager-gateway-6
+
+  gateway-bf5-on-demand:
+    image: ghcr.io/community-network/gateway-bf1/gateway-bf1:latest
+    restart: always
+    depends_on:
+      - rabbitmq-server
+    environment:
+      - GAME=BF5
+    extra_hosts:
+      - "rabbitmq:100.112.156.115"
+    deploy:
+      replicas: 1
+
+  gateway-bf5:
+    image: ghcr.io/community-network/gateway-bf1/gateway-bf1:latest
+    restart: always
+    depends_on:
+      - rabbitmq-server
+    extra_hosts:
+      - "rabbitmq:100.112.156.115"
+    deploy:
+      replicas: 6
+    environment:
+      - GAME=BF5
+      - TASK_SLOT={{.Task.Slot}}
+    secrets:
+      - manager-gateway-1
+      - manager-gateway-2
+      - manager-gateway-3
+      - manager-gateway-4
+      - manager-gateway-5
+      - manager-gateway-6
+
+  rest-api-gateway:
+    image: ghcr.io/community-network/gateway-ampq-rest-api/gateway-ampq-rest-api:latest
+    restart: always
+    depends_on:
+      - rabbitmq-server
+      - gateway-bf1
+    deploy:
+      mode: global
+    extra_hosts:
+      - "rabbitmq:100.112.156.115"
+    environment:
+      - GT_GATEWAY={{GT_GATEWAY}}
+    ports:
+      - target: 3030
+        published: 3031
+        protocol: tcp
+        mode: ingress
+    healthcheck:
+      test: gateway-ampq-health-check
+      interval: 30s
+      start_period: 30s
+      timeout: 30s
+      retries: 3
+
+  rest-api-gateway-2:
+    image: ghcr.io/community-network/gateway-ampq-rest-api/gateway-ampq-rest-api:latest
+    restart: always
+    depends_on:
+      - rabbitmq-server
+      - gateway-bf1
+    deploy:
+      mode: global
+    extra_hosts:
+      - "rabbitmq:100.112.156.115"
+    environment:
+      - GT_GATEWAY={{GT_GATEWAY}}
+    ports:
+      - target: 3030
+        published: 3036
+        protocol: tcp
+        mode: ingress
+    healthcheck:
+      test: gateway-ampq-health-check
+      interval: 30s
+      start_period: 30s
+      timeout: 30s
+      retries: 3
+
+  rest-api-gateway-3:
+    image: ghcr.io/community-network/gateway-ampq-rest-api/gateway-ampq-rest-api:latest
+    restart: always
+    depends_on:
+      - rabbitmq-server
+      - gateway-bf1
+    environment:
+      - GT_GATEWAY={{GT_GATEWAY}}
+    deploy:
+      mode: global
+    extra_hosts:
+      - "rabbitmq:100.112.156.115"
+    ports:
+      - target: 3030
+        published: 3037
+        protocol: tcp
+        mode: ingress
+    healthcheck:
+      test: gateway-ampq-health-check
+      interval: 30s
+      start_period: 30s
+      timeout: 30s
+      retries: 3
+
+  rest-api-gateway-4:
+    image: ghcr.io/community-network/gateway-ampq-rest-api/gateway-ampq-rest-api:latest
+    restart: always
+    depends_on:
+      - rabbitmq-server
+      - gateway-bf1
+    environment:
+      - GT_GATEWAY={{GT_GATEWAY}}
+    deploy:
+      mode: global
+    extra_hosts:
+      - "rabbitmq:100.112.156.115"
+    ports:
+      - target: 3030
+        published: 3038
+        protocol: tcp
+        mode: ingress
+    healthcheck:
+      test: gateway-ampq-health-check
+      interval: 30s
+      start_period: 30s
+      timeout: 30s
+      retries: 3
+
+secrets:
+  manager-gateway-1:
+    external: true
+  manager-gateway-2:
+    external: true
+  manager-gateway-3:
+    external: true
+  manager-gateway-4:
+    external: true
+  manager-gateway-5:
+    external: true
+  manager-gateway-6:
+    external: true

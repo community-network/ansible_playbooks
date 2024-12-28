@@ -1,0 +1,34 @@
+---
+- name: Update main servers
+  hosts: servers
+  become: true
+
+  tasks:
+    - name: Update Hetzner mirrors for arm64 linux servers
+      ansible.builtin.replace:
+        path: /etc/apt/sources.list
+        regexp: "https:\\/\\/mirror\\.hetzner\\.com\\/ubuntu\\/"
+        replace: "https://mirror.hetzner.com/ubuntu-ports/"
+      when: ansible_facts.bios_vendor == "Hetzner" and ansible_facts.architecture == "aarch64"
+    - name: Update all packages to their latest version
+      become: true
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+        update_cache: true
+        autoremove: true
+        purge: true
+        only_upgrade: true
+    - name: Prune everything within Docker
+      community.docker.docker_prune:
+        containers: true
+        images: true
+        networks: true
+        volumes: true
+        builder_cache: true
+    - name: Ensure that free space on '/' is grater than 30%
+      ansible.builtin.assert:
+        that: mount.size_available > mount.size_total|float * 0.3
+        msg: disk space has reached 70% threshold
+      vars:
+        mount: "{{ ansible_mounts | selectattr('mount', 'equalto', '/') | list | first }}"
