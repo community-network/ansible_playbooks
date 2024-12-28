@@ -43,3 +43,7 @@ The directory structure follows best practices recommended by the Ansible commun
 ## Compatible with Ansible-lint
 
 Tested with ansible-lint >=24.2.0 releases and the current development version of ansible-core.
+
+
+## Edit vault file from within vscode:
+EDITOR='code --wait' ansible-vault edit inventory/hosts.yml
